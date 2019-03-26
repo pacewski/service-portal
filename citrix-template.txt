@@ -1,0 +1,142 @@
+// get caller information
+var userUtils = new ArlaUserUtils();
+var userObj = userUtils.getUser(gs.getUserID());
+var caller_name = userObj.fullName;
+
+// Set Ticket- type and state, Business Service and target Architecture 
+current.caller_id = gs.getUserID();
+current.contact_type = 'service portal';
+current.u_incident_type = 1;
+
+// Set Ticket bussiness service based on issue type
+
+if (producer.issue_type == 'login_issue') {
+	current.u_business_service = 'f2987fe8db6bf2006ee5fb041d9619d6';
+	current.u_it_service = '900d73a4dbabf2006ee5fb041d96192f';
+} else if (producer.issue_type == 'missing_application') {
+	current.u_business_service = 'f2987fe8db6bf2006ee5fb041d9619d6';
+	current.u_it_service = '900d73a4dbabf2006ee5fb041d96192f';
+} else {
+	current.u_business_service = '76987fe8db6bf2006ee5fb041d9619d6';
+	current.u_it_service = 'e00d73a4dbabf2006ee5fb041d961943';
+}
+
+
+// Bussiness services groups name 
+// security - f2987fe8db6bf2006ee5fb041d9619d6
+// identity and ... - 900d73a4dbabf2006ee5fb041d96192f
+// end user c - 76987fe8db6bf2006ee5fb041d9619d6
+// citrix issue - e00d73a4dbabf2006ee5fb041d961943
+
+
+
+// Set Urgency and Impact
+current.urgency = 4;
+current.impact = 4;
+
+
+
+// Set Incident information; Short Description and Description
+
+var issue = "General Issue - ";
+if (producer.issue_type == 'login_issue') {
+	issue = "Login / license Issue - ";
+} else if (producer.issue_type == 'application_error') {
+	issue = "Application Error - ";
+} else if (producer.issue_type == 'missing_application') {
+	issue = "Missing Application - ";
+} else if (producer.issue_type == 'technical_issue') {
+	issue = "Technical Issue - ";
+} else if (producer.issue_type == 'functional_issue') {
+	issue = "Functional Issue - ";
+} else if (producer.issue_type == 'other') {
+	issue = producer.short_description;
+}
+
+
+var affected_users = 'Single User Issue';
+if (producer.affected_users == 'multiple_users') {
+	affected_users = 'Multiple Users Issue';
+} else if (producer.affected_users == 'whole_site') {
+	affected_users = 'whole site affected (possible sev 2)';
+}
+
+/*
+application_error
+missing_application
+application_error
+technical_issue
+functional _issue
+other
+*/
+
+
+current.short_description = 'Citrix Issue - '+ issue + affected_users ;
+
+
+	
+
+
+// ####  Set description
+      
+if (producer.phone_number == ''){
+	userObj.phone = 'N/A';
+}else if (userObj.phone == ''){
+	userObj.phone = producer.phone_number;
+}
+
+
+var vpn = true;
+if (producer.vpn != true){
+	vpn = false;
+}
+var pc_type = " ";
+if (producer.machine == 'pc') {
+		pc_type = '\n' + 'PC type: ' + producer.pc_type + '\n';
+}
+
+var pc_number = " ";
+if (producer.pc_type == 'arla_laptop') {
+		pc_type = '\n' + 'PC number: ' + producer.pc_number + '\n';
+}
+
+var mobile_system = " ";
+if (producer.mobile_system == 'mobile_system') {
+		mobile_system = 'Mobile System: ' + producer.mobile_system + '\n';
+}
+
+var desc_ext = 'Machine type: ' + producer.machine + 
+		pc_type +
+		pc_number +	
+		mobile_system + 
+		'Working on VPN: ' + vpn;
+
+var other_comment = " ";
+if (producer.short_description != '') {
+	other_comment = producer.short_description;
+}
+
+
+var comment = " ";
+if (producer.comment != '') {
+	comment = 'Additional comments: ' + producer.comment;
+}
+
+
+var desc_text = 'Caller: ' +caller_name +
+	'\n' +'Initials: ' + userObj.userName +
+	'\n' +'Email: ' + userObj.email +
+	'\n' +'Phone: ' +userObj.phone + 
+	'\n' + desc_ext + 
+	'\n' + 'Issue Type: ' + issue +
+	'\n' + '\n' + 'Issue: \n' + producer.problem_description +
+	'\n' + '\n' + comment;
+
+
+
+
+    // Set description text
+current.description = desc_text;
+
+
+
